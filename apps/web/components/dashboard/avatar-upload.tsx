@@ -87,22 +87,24 @@ export default function AvatarUpload({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="relative">
-                <Image
-                  src={preview}
-                  alt="Preview"
-                  width={64}
-                  height={64}
-                  className="w-32 h-32 rounded-full object-cover border-2 border-primary"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="absolute top-2 right-2 bg-black/50 text-white hover:bg-black/70"
-                  onClick={clearSelection}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+              <div className="flex justify-center">
+                <div className="relative">
+                  <Image
+                    src={preview}
+                    alt="Preview"
+                    width={64}
+                    height={64}
+                    className="w-32 h-32 rounded-full object-cover border-2 border-primary"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute -top-2 -right-2 bg-black/50 text-white hover:bg-black/70 rounded-full p-2"
+                    onClick={clearSelection}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
 
               <DialogFooter>
