@@ -22,7 +22,6 @@ phases:
       - cp -r apps/backend/dist deploy/
       - cp -r out/node_modules deploy/node_modules/
       - cp -r out/drizzle deploy/
-      - cp out/global-bundle.pem deploy/dist/
       - cp out/Procfile deploy/
       - cp out/package.json deploy/
 
