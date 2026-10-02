@@ -1,41 +1,76 @@
 "use client";
 
 import Image from "next/image";
-import { Heart, MessageCircle, User } from "lucide-react";
 import { Post } from "@repo/trpc/schemas";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Bookmark, Heart, MessageCircle, User } from "lucide-react";
+import { Card } from "../ui/card";
+import { Button } from "../ui/button";
 import { getImageUrl } from "@/lib/image";
+import { useState } from "react";
+import PostComments from "./post-comments";
+import { useRouter } from "next/navigation";
 
 interface FeedProps {
   posts: Post[];
   onLikePost: (postId: number) => void;
+  onAddComment: (postId: number, text: string) => void;
+  onDeleteComment: (commentId: number) => void;
+  onSavePost: (postId: number) => void;
 }
 
-export default function Feed({ posts, onLikePost }: FeedProps) {
+export default function Feed({
+  posts,
+  onLikePost,
+  onAddComment,
+  onDeleteComment,
+  onSavePost,
+}: FeedProps) {
+  const [expandedComments, setExpandedComments] = useState<Set<number>>(
+    new Set(),
+  );
+
+  const router = useRouter();
+  const toggleComments = (postId: number) => {
+    setExpandedComments((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(postId)) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <div className="space-y-6">
       {posts.map((post) => (
         <Card key={post.id} className="overflow-hidden">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center space-x-3">
-              {getImageUrl(post.user.avatar) ? (
-                <Image
-                  src={getImageUrl(post.user.avatar)}
-                  alt={post.user.username}
-                  width={64}
-                  height={64}
-                  className="w-8 h-8 rounded-full"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                </div>
-              )}
+              <Button
+                variant="ghost"
+                className="p-0"
+                onClick={() => router.push(`/users/${post.user.id}`)}
+              >
+                {getImageUrl(post.user.avatar) ? (
+                  <Image
+                    src={getImageUrl(post.user.avatar)}
+                    alt={post.user.username}
+                    width={64}
+                    height={64}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                )}
 
-              <span className="font-semibold text-sm">
-                {post.user.username}
-              </span>
+                <span className="font-semibold text-sm">
+                  {post.user.username}
+                </span>
+              </Button>
             </div>
           </div>
 
@@ -45,6 +80,7 @@ export default function Feed({ posts, onLikePost }: FeedProps) {
               alt="Post"
               className="object-cover"
               fill
+              sizes="(max-width: 1024px) 100vw, 736px"
             />
           </div>
 
@@ -64,30 +100,63 @@ export default function Feed({ posts, onLikePost }: FeedProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {}}
+                  onClick={() => toggleComments(post.id)}
                   className="p-0 h-auto"
                 >
-                  <MessageCircle className="w-6 h-6 text-foreground" />
+                  <MessageCircle
+                    className={`w-6 h-6 ${expandedComments.has(post.id) ? "fill-primary text-primary" : "text-foreground"}`}
+                  />
                 </Button>
               </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onSavePost(post.id)}
+                className="p-0 h-auto"
+              >
+                <Bookmark
+                  className={`w-6 h-6 ${post.isSaved ? "fill-foreground" : ""}`}
+                />
+              </Button>
             </div>
 
             <div className="text-sm font-semibold">{post.likes} likes</div>
 
             <div className="text-sm">
-              <span className="font-semibold">{post.user.username}</span>
+              <Button
+                variant="ghost"
+                className="p-0 h-auto font-semibold hover:bg-transparent hover:opacity-80"
+                onClick={() => router.push(`/users/${post.user.id}`)}
+              >
+                {post.user.username}
+              </Button>{" "}
               {post.caption}
             </div>
 
             {post.comments > 0 && (
-              <div className="text-sm text-muted-foreground">
+              <Button
+                variant="ghost"
+                className="p-0 h-auto text-sm text-muted-foreground hover:bg-transparent hover:opacity-80"
+                onClick={() => toggleComments(post.id)}
+              >
                 View all {post.comments} comments
-              </div>
+              </Button>
             )}
 
-            <div className="text-sm text-muted-foreground uppercase">
+            <div className="text-xs text-muted-foreground uppercase">
               {new Date(post.timestamp).toLocaleDateString()}
             </div>
+
+            {expandedComments.has(post.id) && (
+              <div className="pt-4 border-t">
+                <PostComments
+                  postId={post.id}
+                  onAddComment={onAddComment}
+                  onDeleteComment={onDeleteComment}
+                />
+              </div>
+            )}
           </div>
         </Card>
       ))}

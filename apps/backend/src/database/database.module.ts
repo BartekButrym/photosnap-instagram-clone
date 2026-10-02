@@ -5,10 +5,14 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { DATABASE_CONNECTION } from './database-connection';
 import * as authSchema from '../auth/schema';
 import * as postsSchema from '../posts/schemas/schema';
+import * as commentSchema from '../comments/schemas/schema';
+import * as storiesSchema from '../stories/schemas/schema';
 
 export const schema = {
   ...authSchema,
   ...postsSchema,
+  ...commentSchema,
+  ...storiesSchema,
 };
 
 @Module({

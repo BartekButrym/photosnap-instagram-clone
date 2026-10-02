@@ -9,13 +9,17 @@ import {
 import {
   CreatePostInput,
   createPostSchema,
+  FindAllPostsInput,
+  findAllPostsSchema,
   LikePostInput,
   likePostSchema,
   postSchema,
+  SavePostInput,
+  savePostSchema,
 } from '@repo/trpc/schemas';
 import { PostsService } from './posts.service';
 import z from 'zod';
-import { AuthTrpcMiddleware } from 'src/auth/auth-trpc.middleware';
+import { AuthTrpcMiddleware } from '../auth/auth-trpc.middleware';
 import { AppContext } from 'src/app.context.interface';
 
 @Router()
@@ -31,9 +35,15 @@ export class PostsRouter {
     return this.postsService.create(createPostInput, context.user.id);
   }
 
-  @Query({ output: z.array(postSchema) })
-  async findAll(@Ctx() context: AppContext) {
-    return this.postsService.findAll(context.user.id);
+  @Query({ output: z.array(postSchema), input: findAllPostsSchema })
+  async findAll(
+    @Ctx() context: AppContext,
+    @Input() findAllPostsSchema: FindAllPostsInput,
+  ) {
+    return this.postsService.findAll(
+      context.user.id,
+      findAllPostsSchema.userId,
+    );
   }
 
   @Mutation({ input: likePostSchema })
@@ -41,9 +51,19 @@ export class PostsRouter {
     @Input() likePostInput: LikePostInput,
     @Ctx() context: AppContext,
   ) {
-    return await this.postsService.likePost(
-      likePostInput.postId,
-      context.user.id,
-    );
+    return this.postsService.likePost(likePostInput.postId, context.user.id);
+  }
+
+  @Mutation({ input: savePostSchema })
+  async savePost(
+    @Input() savePostInput: SavePostInput,
+    @Ctx() context: AppContext,
+  ) {
+    return this.postsService.savePost(savePostInput.postId, context.user.id);
+  }
+
+  @Query({ output: z.array(postSchema) })
+  async getSavedPosts(@Ctx() context: AppContext) {
+    return this.postsService.getSavedPosts(context.user.id);
   }
 }

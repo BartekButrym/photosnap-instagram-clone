@@ -1,6 +1,11 @@
+import { text } from 'drizzle-orm/pg-core';
+import { timestamp } from 'drizzle-orm/pg-core';
+import { integer } from 'drizzle-orm/pg-core';
+import { serial } from 'drizzle-orm/pg-core';
+import { pgTable } from 'drizzle-orm/pg-core';
+import { user } from '../../auth/schema';
 import { relations } from 'drizzle-orm';
-import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
-import { user } from 'src/auth/schema';
+import { comment } from '../../comments/schemas/schema';
 
 export const post = pgTable('post', {
   id: serial('id').primaryKey(),
@@ -18,6 +23,7 @@ export const postRelations = relations(post, ({ one, many }) => ({
     references: [user.id],
   }),
   likes: many(like),
+  comments: many(comment),
 }));
 
 export const like = pgTable('like', {
@@ -37,6 +43,30 @@ export const likeRelations = relations(like, ({ one }) => ({
   }),
   post: one(post, {
     fields: [like.postId],
+    references: [post.id],
+  }),
+}));
+
+export const savedPost = pgTable('saved_post', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  postId: integer('post_id')
+    .notNull()
+    .references(() => post.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at')
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+export const savedPostRelations = relations(savedPost, ({ one }) => ({
+  user: one(user, {
+    fields: [savedPost.userId],
+    references: [user.id],
+  }),
+  post: one(post, {
+    fields: [savedPost.postId],
     references: [post.id],
   }),
 }));
