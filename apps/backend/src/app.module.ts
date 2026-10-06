@@ -27,15 +27,19 @@ import { StoriesModule } from './stories/stories.module';
     }),
     AuthModule.forRootAsync({
       imports: [DatabaseModule, ConfigModule],
-      useFactory: (database: NodePgDatabase, configService: ConfigService) => ({
-        auth: betterAuth({
-          database: drizzleAdapter(database, {
-            provider: 'pg',
+      useFactory: (database: NodePgDatabase, configService: ConfigService) => {
+        const uiUrl = configService.get<string>('UI_URL');
+
+        return {
+          auth: betterAuth({
+            database: drizzleAdapter(database, {
+              provider: 'pg',
+            }),
+            emailAndPassword: { enabled: true },
+            trustedOrigins: uiUrl ? [uiUrl] : undefined,
           }),
-          emailAndPassword: { enabled: true },
-          trustedOrigins: [configService.getOrThrow('UI_URL')],
-        }),
-      }),
+        };
+      },
       inject: [DATABASE_CONNECTION, ConfigService],
     }),
     PostsModule,
