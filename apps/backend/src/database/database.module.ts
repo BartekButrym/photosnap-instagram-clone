@@ -34,7 +34,7 @@ export const schema = {
 
         const pool = new Pool({
           host: configService.getOrThrow('DATABASE_HOST'),
-          port: configService.getOrThrow('PORT'),
+          port: configService.getOrThrow('DATABASE_PORT'),
           user: configService.getOrThrow('DATABASE_USER'),
           password: configService.getOrThrow('DATABASE_PASSWORD'),
           database: configService.getOrThrow('DATABASE_NAME'),
